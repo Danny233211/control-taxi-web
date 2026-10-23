@@ -26,10 +26,8 @@ def iniciar_sesion_firebase(email, password):
             if response.status == 200:
                 data = json.loads(response.read().decode('utf-8'))
                 return data.get("localId"), None
-    except urllib.error.HTTPError:
+    except Exception:
         return None, "Correo o contraseña incorrectos."
-    except Exception as e:
-        return None, f"Error de conexión: {str(e)}"
     return None, "Error desconocido."
 
 def cargar_datos_nube(uid):
@@ -44,14 +42,13 @@ def cargar_datos_nube(uid):
     except Exception:
         pass
     return {"turnos": [], "mantenimientos": [], "turno_activo": None}
-
 def main():
     if "uid" not in st.session_state:
         st.session_state.uid = None
     if "email" not in st.session_state:
         st.session_state.email = None
 
-    # 1. PANTALLA DE LOGIN (Si no ha iniciado sesión)
+    # Pantalla de Login
     if not st.session_state.uid:
         st.markdown("<h2 style='text-align: center; color: #FFD700;'>🚖 CONTROL DE TAXI - PANEL WEB</h2>", unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; color: #AAAAAA;'>Ingrese con su cuenta de Firebase para ver sus datos</p>", unsafe_allow_html=True)
@@ -76,7 +73,7 @@ def main():
                         st.warning("Por favor complete ambos campos.")
         return
 
-    # 2. PANEL PRINCIPAL (Se muestra solo después de iniciar sesión)
+    # Panel Principal con Menú
     st.sidebar.title("🚖 Menú Web")
     st.sidebar.markdown(f"**Usuario:** `{st.session_state.email}`")
     
@@ -137,12 +134,10 @@ def main():
                         st.success(f"Se encontraron {len(filtrados)} turno(s):")
                         for idx, t in enumerate(filtrados, 1):
                             with st.expander(f"Turno #{idx} - Chofer: {t.get('chofer')} ({t.get('fecha')})"):
-                                st.write(f"**Modalidad:** {'Cuota Fija (₡ ' + f'{t.get(\"monto_cuota\", 0):,.2f}' + ')' if t.get('es_cuota') else 'Comisión 30%'}")
                                 st.write(f"**Horario:** {t.get('hora_inicio')} - {t.get('hora_fin')}")
                                 st.write(f"**Km Recorridos:** {t.get('km_recorridos', 0):,.1f} km")
                                 st.write(f"**Ingreso Bruto Total:** ₡ {t.get('total_ingresos', 0):,.2f}")
                                 st.write(f"**Ganancia Neta Final (Dueño):** ₡ {t.get('ganancia_neta', 0):,.2f}")
-                                st.write(f"**Efectivo Neto para el Taxi:** ₡ {t.get('efectivo_restante_taxi', 0):,.2f}")
                 else:
                     st.warning("Por favor ingrese una fecha.")
 
@@ -157,7 +152,7 @@ def main():
                 st.markdown(f"""
                 **{idx}. {m.get('item', 'Repuesto').capitalize()}**  
                 * Fecha: {m.get('fecha')}  
-                * Km Realizado: {m.get('km_realizado', 0):,.1f} km | Próximo Cambio: {m.get('km_proximo', 0):,.1f} km  
+                * Km Realizado: {m.get('km_realizado', 0):,.1f} km  
                 * **Costo:** ₡ {m.get('costo', 0):,.2f}  
                 """)
                 st.markdown("---")
