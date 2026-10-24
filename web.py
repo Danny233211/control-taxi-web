@@ -182,17 +182,30 @@ def main():
                         
                         st.markdown("---")
                         st.markdown("### 💳 PAGOS RECIBIDOS")
-                        st.markdown(f"- **Efectivo:** ₡ {t.get('efectivo', 0):,.2f}")
-                        st.markdown(f"- **Datáfono:** ₡ {t.get('datafono', 0):,.2f}")
-                        st.markdown(f"- **Sinpe Móvil:** ₡ {t.get('sinpe', 0):,.2f}")
+                        
+                        efectivo = t.get('efectivo', 0)
+                        datafono = t.get('datafono', 0)
+                        sinpe = t.get('sinpe', 0)
+                        b_coop_neto = t.get('boletas_coop_neto', 0)
+                        b_taxi18_neto = t.get('boletas_taxi18_neto', 0)
+                        b_taxi10_neto = t.get('boletas_taxi10_neto', 0)
+                        
+                        # Suma de todo lo que NO es dinero en efectivo
+                        total_digitales = datafono + sinpe + b_coop_neto + b_taxi18_neto + b_taxi10_neto
+                        
+                        st.markdown(f"- **Efectivo:** ₡ {efectivo:,.2f}")
+                        st.markdown(f"- **Datáfono:** ₡ {datafono:,.2f}")
+                        st.markdown(f"- **Sinpe Móvil:** ₡ {sinpe:,.2f}")
                         
                         if t.get("boletas_coop_bruto", 0) > 0:
-                            st.markdown(f"- **Boletas Coop (-12%):** ₡ {t.get('boletas_coop_neto', 0):,.2f} *(Bruto: ₡ {t.get('boletas_coop_bruto', 0):,.2f})*")
+                            st.markdown(f"- **Boletas Coop (-12%):** ₡ {b_coop_neto:,.2f} *(Bruto: ₡ {t.get('boletas_coop_bruto', 0):,.2f})*")
                         if t.get("boletas_taxi18_bruto", 0) > 0:
-                            st.markdown(f"- **Boletas Taxizarias (-18%):** ₡ {t.get('boletas_taxi18_neto', 0):,.2f} *(Bruto: ₡ {t.get('boletas_taxi18_bruto', 0):,.2f})*")
+                            st.markdown(f"- **Boletas Taxizarias (-18%):** ₡ {b_taxi18_neto:,.2f} *(Bruto: ₡ {t.get('boletas_taxi18_bruto', 0):,.2f})*")
                         if t.get("boletas_taxi10_bruto", 0) > 0:
-                            st.markdown(f"- **Boletas Taxizarias (-10%):** ₡ {t.get('boletas_taxi10_neto', 0):,.2f} *(Bruto: ₡ {t.get('boletas_taxi10_bruto', 0):,.2f})*")
+                            st.markdown(f"- **Boletas Taxizarias (-10%):** ₡ {b_taxi10_neto:,.2f} *(Bruto: ₡ {t.get('boletas_taxi10_bruto', 0):,.2f})*")
                         
+                        st.markdown(f"- 📲 **Total Pagos Digitales / No Efectivo:** ₡ {total_digitales:,.2f}")
+
                         st.markdown("---")
                         if not es_cuota:
                             st.markdown("### 🤝 COMISIÓN CHÓFER (30%)")
