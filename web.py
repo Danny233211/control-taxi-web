@@ -10,11 +10,11 @@ st.set_page_config(
     layout="wide"
 )
 
-# ESTILOS PARA OCULTAR BOTONES DE DESARROLLO PERO MANTENER EL MENÚ
+# ESTILOS PARA OCULTAR SOLO LOS BOTONES DE LA DERECHA SIN AFECTAR LA FLECHA
 hide_streamlit_style = """
     <style>
-    /* Oculta los botones superiores (Fork, GitHub, etc.) */
-    [data-testid="stToolbar"] {visibility: hidden !important; height: 0 !important;}
+    /* Oculta únicamente el bloque de herramientas de la derecha (Fork, GitHub, etc.) */
+    [data-testid="stToolbar"] { display: none !important; }
     /* Oculta el badge flotante inferior */
     .viewerBadge_container__1QSob {display: none !important;}
     </style>
