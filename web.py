@@ -10,9 +10,12 @@ st.set_page_config(
     layout="wide"
 )
 
-# ESTILOS PARA FORZAR LA OCULTACIÓN DE LOS BOTONES FLOTANTES
+# ESTILOS PARA OCULTAR BOTONES DE DESARROLLO PERO MANTENER EL MENÚ
 hide_streamlit_style = """
     <style>
+    /* Oculta los botones superiores (Fork, GitHub, etc.) */
+    [data-testid="stToolbar"] {visibility: hidden !important; height: 0 !important;}
+    /* Oculta el badge flotante inferior */
     .viewerBadge_container__1QSob {display: none !important;}
     </style>
 """
