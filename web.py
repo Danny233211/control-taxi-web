@@ -13,7 +13,7 @@ st.set_page_config(
 # ESTILOS PARA LIMPIAR LA INTERFAZ DE BOTONES DE DESARROLLO
 hide_streamlit_style = """
     <style>
-    /* Oculta los botones superiores de Streamlit (Deploy, GitHub, Tres puntos) */
+    /* Oculta los botones superiores de Streamlit */
     [data-testid="stAppDeployButton"] { display: none !important; }
     [data-testid="stMainMenu"] { display: none !important; }
     [data-testid="stToolbar"] { display: none !important; }
@@ -164,8 +164,6 @@ def main():
                         st.markdown(f"**Chofer:** {t.get('chofer', 'No especificado')}")
                         if es_cuota:
                             st.markdown(f"**Modalidad:** Cuota Fija (₡ {monto_c:,.2f})")
-                            if t.get("deuda_chofer", 0) > 0:
-                                st.markdown(f"**A favor del Chófer (Se le debe):** ₡ {t.get('deuda_chofer', 0):,.2f}")
                         else:
                             st.markdown("**Modalidad:** Comisión 30%")
                             
@@ -173,14 +171,14 @@ def main():
                         st.markdown(f"**Km Recorridos:** {t.get('km_recorridos', 0):,.1f} km")
                         st.markdown("---")
                         
-                        st.markdown(f"• **Ingreso Bruto Total Real:** ₡ {t.get('total_ingresos', 0):,.2f}")
+                        st.markdown(f"• **1. Ingreso Bruto Total Real:** ₡ {t.get('total_ingresos', 0):,.2f}")
                         if es_cuota:
-                            st.markdown(f"• **Cuota Fija del Chófer:** ₡ {monto_c:,.2f}")
+                            st.markdown(f"• **2. Cuota Fija del Chófer:** ₡ {monto_c:,.2f}")
                         else:
-                            st.markdown(f"• **Comisión Chófer (30%):** ₡ {t.get('comision_chofer', 0):,.2f}")
-                            st.markdown(f"• **Ingreso menos 30% Chófer:** ₡ {t.get('ingreso_menos_chofer', 0):,.2f}")
-                            st.markdown(f"• **Menos Gastos Registrados:** ₡ {t.get('total_gastos', 0):,.2f}")
-                        st.markdown(f"• **Ganancia Neta Final (Dueño):** ₡ {t.get('ganancia_neta', 0):,.2f}")
+                            st.markdown(f"• **2. Comisión Chófer (30%):** ₡ {t.get('comision_chofer', 0):,.2f}")
+                            st.markdown(f"• **3. Ingreso menos 30% Chófer:** ₡ {t.get('ingreso_menos_chofer', 0):,.2f}")
+                            st.markdown(f"• **4. Menos Gastos Registrados:** ₡ {t.get('total_gastos', 0):,.2f}")
+                        st.markdown(f"• **5. Ganancia Neta Final (Dueño):** ₡ {t.get('ganancia_neta', 0):,.2f}")
                         
                         st.markdown("---")
                         st.markdown("### 💳 PAGOS RECIBIDOS")
@@ -196,6 +194,17 @@ def main():
                             st.markdown(f"- **Boletas Taxizarias (-10%):** ₡ {t.get('boletas_taxi10_neto', 0):,.2f} *(Bruto: ₡ {t.get('boletas_taxi10_bruto', 0):,.2f})*")
                         
                         st.markdown("---")
+                        if not es_cuota:
+                            st.markdown("### 🤝 COMISIÓN CHÓFER (30%)")
+                            st.markdown(f"- **Comisión Total (30%):** ₡ {t.get('comision_chofer', 0):,.2f}")
+                            st.markdown(f"- **El chófer agarró en efectivo:** ₡ {t.get('efectivo_retirado_chofer', 0):,.2f}")
+                            deuda = t.get('deuda_chofer', 0)
+                            if deuda > 0:
+                                st.markdown(f"- 🔴 **A favor del chófer (Se le debe):** ₡ {deuda:,.2f}")
+                            else:
+                                st.markdown("- 🟢 **Comisión pagada completa en el turno**")
+                            st.markdown("---")
+
                         st.markdown("### ⛽ GASTOS DEL TURNO")
                         st.markdown(f"- **Combustible:** ₡ {t.get('combustible', 0):,.2f}")
                         st.markdown(f"- **Lavado:** ₡ {t.get('lavado', 0):,.2f}")
