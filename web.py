@@ -10,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# ESTILOS PARA LIMPIAR LA INTERFAZ DE BOTONES DE DESARROLLO
+# ESTILOS PARA LIMPIAR LA INTERFAZ Y PREPARAR IMPRESIÓN
 hide_streamlit_style = """
     <style>
     /* Oculta los botones superiores de Streamlit */
@@ -20,6 +20,13 @@ hide_streamlit_style = """
     
     /* Oculta el badge flotante inferior */
     .viewerBadge_container__1QSob { display: none !important; }
+    
+    /* Estilos para impresión limpia */
+    @media print {
+        header, footer, nav, .stButton, button, [data-testid="stForm"], select, input {
+            display: none !important;
+        }
+    }
     </style>
 """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
@@ -190,7 +197,6 @@ def main():
                         b_taxi18_neto = t.get('boletas_taxi18_neto', 0)
                         b_taxi10_neto = t.get('boletas_taxi10_neto', 0)
                         
-                        # Suma de todo lo que NO es dinero en efectivo
                         total_digitales = datafono + sinpe + b_coop_neto + b_taxi18_neto + b_taxi10_neto
                         
                         st.markdown(f"- **Efectivo:** ₡ {efectivo:,.2f}")
@@ -226,6 +232,71 @@ def main():
                         g_extras = t.get("gastos_extras", 0)
                         m_extras = t.get("motivo_extras", "Sin detallar")
                         st.markdown(f"- **Gastos Extras ({m_extras}):** ₡ {g_extras:,.2f}")
+                        
+                        st.markdown("---")
+                        
+                        # ==========================================
+                        # OPCIONES DE EXPORTACIÓN E IMPRESIÓN PDF
+                        # ==========================================
+                        
+                        # Generar texto limpio para descargar
+                        resumen_txt = f"""==========================================
+   REPORTE DE TURNO - CONTROL DE TAXI
+==========================================
+Fecha: {t.get('fecha')}
+Chofer: {t.get('chofer')}
+Horario: {t.get('hora_inicio')} - {t.get('hora_fin')}
+Km Recorridos: {t.get('km_recorridos', 0):,.1f} km
+
+1. Ingreso Bruto Total: Colones {t.get('total_ingresos', 0):,.2f}
+2. Ganancia Neta (Dueño): Colones {t.get('ganancia_neta', 0):,.2f}
+
+PAGOS RECIBIDOS:
+- Efectivo: Colones {efectivo:,.2f}
+- Datáfono: Colones {datafono:,.2f}
+- Sinpe Móvil: Colones {sinpe:,.2f}
+- Total Pagos Digitales: Colones {total_digitales:,.2f}
+
+COMISIÓN CHÓFER (30%):
+- Comisión Total: Colones {t.get('comision_chofer', 0):,.2f}
+- Agarró en efectivo: Colones {t.get('efectivo_retirado_chofer', 0):,.2f}
+- A favor del chófer (deuda): Colones {t.get('deuda_chofer', 0):,.2f}
+
+GASTOS DEL TURNO:
+- Combustible: Colones {t.get('combustible', 0):,.2f}
+- Lavado: Colones {t.get('lavado', 0):,.2f}
+- Peajes: Colones {t.get('peajes', 0):,.2f}
+- Viáticos: Colones {t.get('viaticos', 0):,.2f}
+- Extras ({m_extras}): Colones {g_extras:,.2f}
+=========================================="""
+
+                        col_exp1, col_exp2 = st.columns(2)
+                        
+                        with col_exp1:
+                            st.download_button(
+                                label="📥 Descargar Reporte (.TXT)",
+                                data=resumen_txt,
+                                file_name=f"reporte_taxi_{t.get('fecha')}_{t.get('chofer')}.txt",
+                                mime="text/plain",
+                                use_container_width=True
+                            )
+                            
+                        with col_exp2:
+                            btn_html = """
+                            <button onclick="window.print()" style="
+                                width: 100%;
+                                background-color: #008CBA;
+                                color: white;
+                                padding: 8px 16px;
+                                border: none;
+                                border-radius: 4px;
+                                cursor: pointer;
+                                font-weight: bold;
+                                font-size: 14px;">
+                                🖨️ Imprimir / Guardar en PDF
+                            </button>
+                            """
+                            st.components.v1.html(btn_html, height=45)
 
     elif menu_opcion == "Historial de Repuestos / Mantenimiento":
         st.title("🛠️ Mantenimientos y Repuestos en la Nube")
