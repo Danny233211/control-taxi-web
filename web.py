@@ -10,12 +10,13 @@ st.set_page_config(
     layout="wide"
 )
 
-# ESTILOS PARA OCULTAR SOLO LOS BOTONES DE LA DERECHA (DEPLOY Y MENÚ)
+# ESTILOS PARA LIMPIAR LA INTERFAZ DE BOTONES DE DESARROLLO
 hide_streamlit_style = """
     <style>
-    /* Oculta el botón de Deploy y el menú de los 3 puntos de la derecha */
+    /* Oculta los botones superiores de Streamlit (Deploy, GitHub, Tres puntos) */
     [data-testid="stAppDeployButton"] { display: none !important; }
     [data-testid="stMainMenu"] { display: none !important; }
+    [data-testid="stToolbar"] { display: none !important; }
     
     /* Oculta el badge flotante inferior */
     .viewerBadge_container__1QSob { display: none !important; }
@@ -88,19 +89,25 @@ def main():
                         st.warning("Por favor complete ambos campos.")
         return
 
-    # Panel Principal con Menú
-    st.sidebar.title("🚖 Menú Web")
-    st.sidebar.markdown(f"**Usuario:** `{st.session_state.email}`")
-    
-    menu_opcion = st.sidebar.radio(
-        "Seleccione una opción:",
+    # Panel Principal con Menú Integrado en Pantalla (Sin Sidebar)
+    col_info, col_btn = st.columns([3, 1])
+    with col_info:
+        st.markdown(f"👤 **Usuario Conectado:** `{st.session_state.email}`")
+    with col_btn:
+        if st.button("Cerrar Sesión", use_container_width=True):
+            st.session_state.uid = None
+            st.session_state.email = None
+            st.rerun()
+
+    st.markdown("---")
+
+    # Selector de menú visible directamente en la parte superior
+    menu_opcion = st.selectbox(
+        "📌 Seleccione la sección que desea consultar:",
         ["Resumen en Vivo", "Consultar Reportes por Fecha", "Historial de Repuestos / Mantenimiento"]
     )
     
-    if st.sidebar.button("Cerrar Sesión", use_container_width=True):
-        st.session_state.uid = None
-        st.session_state.email = None
-        st.rerun()
+    st.markdown("---")
 
     datos = cargar_datos_nube(st.session_state.uid)
     turnos = datos.get("turnos", [])
