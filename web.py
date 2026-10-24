@@ -2,6 +2,7 @@ import streamlit as st
 import json
 import urllib.request
 import urllib.error
+from datetime import datetime, timedelta
 
 # CONFIGURACIÓN DE LA PÁGINA WEB
 st.set_page_config(
@@ -133,11 +134,53 @@ def main():
         else:
             st.info("ℹ️ No hay ningún turno abierto en este momento.")
 
-        st.markdown("### 📈 Estadísticas Rápidas del Historial")
-        total_turnos = len(turnos)
-        ingresos_totales = sum(t.get("total_ingresos", 0) for t in turnos)
-        ganancia_dueno_total = sum(t.get("ganancia_neta", 0) for t in turnos)
-        km_totales = sum(t.get("km_recorridos", 0) for t in turnos)
+        st.markdown("### 📈 Estadísticas del Historial")
+        
+        # Selector de filtro temporal
+        filtro_tiempo = st.radio(
+            "Filtrar estadísticas por período:",
+            ["Todo el Historial", "Esta Semana (Lunes a Domingo)", "Este Mes", "Este Año"],
+            horizontal=True
+        )
+        
+        hoy = datetime.now()
+        turnos_filtrados_stats = []
+
+        for t in turnos:
+            fecha_str = t.get("fecha", "")
+            try:
+                parts = fecha_str.split("-")
+                if len(parts) == 3:
+                    fecha_dt = datetime(int(parts[2]), int(parts[1]), int(parts[0]))
+                    
+                    if filtro_tiempo == "Esta Semana (Lunes a Domingo)":
+                        inicio_semana = hoy - timedelta(days=hoy.weekday())
+                        inicio_semana = inicio_semana.replace(hour=0, minute=0, second=0, microsecond=0)
+                        fin_semana = inicio_semana + timedelta(days=6, hours=23, minutes=59, seconds=59)
+                        if inicio_semana <= fecha_dt <= fin_semana:
+                            turnos_filtrados_stats.append(t)
+                            
+                    elif filtro_tiempo == "Este Mes":
+                        if fecha_dt.year == hoy.year and fecha_dt.month == hoy.month:
+                            turnos_filtrados_stats.append(t)
+                            
+                    elif filtro_tiempo == "Este Año":
+                        if fecha_dt.year == hoy.year:
+                            turnos_filtrados_stats.append(t)
+                            
+                    else:
+                        turnos_filtrados_stats.append(t)
+                else:
+                    if filtro_tiempo == "Todo el Historial":
+                        turnos_filtrados_stats.append(t)
+            except Exception:
+                if filtro_tiempo == "Todo el Historial":
+                    turnos_filtrados_stats.append(t)
+
+        total_turnos = len(turnos_filtrados_stats)
+        ingresos_totales = sum(t.get("total_ingresos", 0) for t in turnos_filtrados_stats)
+        ganancia_dueno_total = sum(t.get("ganancia_neta", 0) for t in turnos_filtrados_stats)
+        km_totales = sum(t.get("km_recorridos", 0) for t in turnos_filtrados_stats)
 
         c1, c2, c3, c4 = st.columns(4)
         c1.metric("Turnos Registrados", total_turnos)
@@ -235,11 +278,6 @@ def main():
                         
                         st.markdown("---")
                         
-                        # ==========================================
-                        # OPCIONES DE EXPORTACIÓN E IMPRESIÓN PDF
-                        # ==========================================
-                        
-                        # Generar texto limpio para descargar
                         resumen_txt = f"""==========================================
    REPORTE DE TURNO - CONTROL DE TAXI
 ==========================================
