@@ -10,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# ESTILOS LIMPIOS PARA OCULTAR MENÚ Y BRANDING SIN AFECTAR LOS FORMULARIOS
+# ESTILOS PARA OCULTAR COMPLETAMENTE LA MARCA DE AGUA Y BOTONES FLOTANTES
 hide_streamlit_style = """
     <style>
     #MainMenu {visibility: hidden;}
@@ -18,6 +18,10 @@ hide_streamlit_style = """
     footer {visibility: hidden;}
     .stDeployButton {display:none;}
     [data-testid="stToolbar"] {visibility: hidden; display: none;}
+    [data-testid="stStatusWidget"] {visibility: hidden; display: none;}
+    div[class*="viewerBadge"] {visibility: hidden; display: none;}
+    footer {visibility: hidden; display: none;}
+    .viewerBadge_container__1QSob {visibility: hidden; display: none;}
     </style>
 """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
