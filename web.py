@@ -10,13 +10,18 @@ st.set_page_config(
     layout="wide"
 )
 
-# ESTILOS PARA OCULTAR SOLO LOS BOTONES DE LA DERECHA SIN AFECTAR LA FLECHA
+# ESTILOS PARA OCULTAR EL MENÚ SUPERIOR DERECHO PERO DEJAR LIBRE LA FLECHA IZQUIERDA
 hide_streamlit_style = """
     <style>
-    /* Oculta únicamente el bloque de herramientas de la derecha (Fork, GitHub, etc.) */
+    /* Oculta los botones de la esquina superior derecha (GitHub, Fork, Tres puntos) */
     [data-testid="stToolbar"] { display: none !important; }
+    [data-testid="stMainMenu"] { display: none !important; }
+    
+    /* Fuerza que el botón/flechita de la barra lateral (izquierda) sea visible */
+    [data-testid="collapsedControl"] { display: block !important; visibility: visible !important; }
+
     /* Oculta el badge flotante inferior */
-    .viewerBadge_container__1QSob {display: none !important;}
+    .viewerBadge_container__1QSob { display: none !important; }
     </style>
 """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
