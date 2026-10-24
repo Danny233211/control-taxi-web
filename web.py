@@ -89,7 +89,7 @@ def main():
                         st.warning("Por favor complete ambos campos.")
         return
 
-    # Panel Principal con Menú Integrado en Pantalla (Sin Sidebar)
+    # Panel Principal
     col_info, col_btn = st.columns([3, 1])
     with col_info:
         st.markdown(f"👤 **Usuario Conectado:** `{st.session_state.email}`")
@@ -101,7 +101,6 @@ def main():
 
     st.markdown("---")
 
-    # Selector de menú visible directamente en la parte superior
     menu_opcion = st.selectbox(
         "📌 Seleccione la sección que desea consultar:",
         ["Resumen en Vivo", "Consultar Reportes por Fecha", "Historial de Repuestos / Mantenimiento"]
@@ -151,18 +150,60 @@ def main():
             if fecha_busqueda.strip():
                 filtrados = [t for t in turnos if t.get("fecha") == fecha_busqueda.strip() or t.get("fecha", "").endswith(fecha_busqueda.strip())]
             else:
-                filtrados = turnos  # Muestra todos si está en blanco
+                filtrados = turnos
 
             if not filtrados:
                 st.error(f"No se encontraron registros para: {fecha_busqueda}")
             else:
                 st.success(f"Se encontraron {len(filtrados)} turno(s):")
                 for idx, t in enumerate(filtrados, 1):
+                    es_cuota = t.get("es_cuota", False)
+                    monto_c = t.get("monto_cuota", 0)
+                    
                     with st.expander(f"Turno #{idx} - Chofer: {t.get('chofer')} ({t.get('fecha')})"):
-                        st.write(f"**Horario:** {t.get('hora_inicio')} - {t.get('hora_fin')}")
-                        st.write(f"**Km Recorridos:** {t.get('km_recorridos', 0):,.1f} km")
-                        st.write(f"**Ingreso Bruto Total:** ₡ {t.get('total_ingresos', 0):,.2f}")
-                        st.write(f"**Ganancia Neta Final (Dueño):** ₡ {t.get('ganancia_neta', 0):,.2f}")
+                        st.markdown(f"**Chofer:** {t.get('chofer', 'No especificado')}")
+                        if es_cuota:
+                            st.markdown(f"**Modalidad:** Cuota Fija (₡ {monto_c:,.2f})")
+                            if t.get("deuda_chofer", 0) > 0:
+                                st.markdown(f"**A favor del Chófer (Se le debe):** ₡ {t.get('deuda_chofer', 0):,.2f}")
+                        else:
+                            st.markdown("**Modalidad:** Comisión 30%")
+                            
+                        st.markdown(f"**Horario:** {t.get('hora_inicio', '')} - {t.get('hora_fin', '')}")
+                        st.markdown(f"**Km Recorridos:** {t.get('km_recorridos', 0):,.1f} km")
+                        st.markdown("---")
+                        
+                        st.markdown(f"• **Ingreso Bruto Total Real:** ₡ {t.get('total_ingresos', 0):,.2f}")
+                        if es_cuota:
+                            st.markdown(f"• **Cuota Fija del Chófer:** ₡ {monto_c:,.2f}")
+                        else:
+                            st.markdown(f"• **Comisión Chófer (30%):** ₡ {t.get('comision_chofer', 0):,.2f}")
+                            st.markdown(f"• **Ingreso menos 30% Chófer:** ₡ {t.get('ingreso_menos_chofer', 0):,.2f}")
+                            st.markdown(f"• **Menos Gastos Registrados:** ₡ {t.get('total_gastos', 0):,.2f}")
+                        st.markdown(f"• **Ganancia Neta Final (Dueño):** ₡ {t.get('ganancia_neta', 0):,.2f}")
+                        
+                        st.markdown("---")
+                        st.markdown("### 💳 PAGOS RECIBIDOS")
+                        st.markdown(f"- **Efectivo:** ₡ {t.get('efectivo', 0):,.2f}")
+                        st.markdown(f"- **Datáfono:** ₡ {t.get('datafono', 0):,.2f}")
+                        st.markdown(f"- **Sinpe Móvil:** ₡ {t.get('sinpe', 0):,.2f}")
+                        
+                        if t.get("boletas_coop_bruto", 0) > 0:
+                            st.markdown(f"- **Boletas Coop (-12%):** ₡ {t.get('boletas_coop_neto', 0):,.2f} *(Bruto: ₡ {t.get('boletas_coop_bruto', 0):,.2f})*")
+                        if t.get("boletas_taxi18_bruto", 0) > 0:
+                            st.markdown(f"- **Boletas Taxizarias (-18%):** ₡ {t.get('boletas_taxi18_neto', 0):,.2f} *(Bruto: ₡ {t.get('boletas_taxi18_bruto', 0):,.2f})*")
+                        if t.get("boletas_taxi10_bruto", 0) > 0:
+                            st.markdown(f"- **Boletas Taxizarias (-10%):** ₡ {t.get('boletas_taxi10_neto', 0):,.2f} *(Bruto: ₡ {t.get('boletas_taxi10_bruto', 0):,.2f})*")
+                        
+                        st.markdown("---")
+                        st.markdown("### ⛽ GASTOS DEL TURNO")
+                        st.markdown(f"- **Combustible:** ₡ {t.get('combustible', 0):,.2f}")
+                        st.markdown(f"- **Lavado:** ₡ {t.get('lavado', 0):,.2f}")
+                        st.markdown(f"- **Peajes:** ₡ {t.get('peajes', 0):,.2f}")
+                        st.markdown(f"- **Viáticos:** ₡ {t.get('viaticos', 0):,.2f}")
+                        g_extras = t.get("gastos_extras", 0)
+                        m_extras = t.get("motivo_extras", "Sin detallar")
+                        st.markdown(f"- **Gastos Extras ({m_extras}):** ₡ {g_extras:,.2f}")
 
     elif menu_opcion == "Historial de Repuestos / Mantenimiento":
         st.title("🛠️ Mantenimientos y Repuestos en la Nube")
