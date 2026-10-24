@@ -25,7 +25,7 @@ hide_streamlit_style = """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 FIREBASE_API_KEY = "AIzaSyAOcup1zGoY9f_2CP4lBYdwBz_vWgacf5U"
-FIREBASE_DB_URL = "https://control-taxi-dany-default-rtdb.firebaseio.com/"
+FIREBASE_DB_URL = "https://control-taxi-app-default-rtdb.firebaseio.com"
 
 def iniciar_sesion_firebase(email, password):
     url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_API_KEY}"
@@ -146,22 +146,23 @@ def main():
         if not turnos:
             st.info("No hay turnos registrados en la nube todavía.")
         else:
-            fecha_busqueda = st.text_input("Ingrese la fecha a consultar (Formato: DD-MM-YYYY o MM-YYYY)", placeholder="ej: 23-10-2026")
-            if st.button("Buscar Reporte"):
-                if fecha_busqueda:
-                    filtrados = [t for t in turnos if t.get("fecha") == fecha_busqueda or t.get("fecha", "").endswith(fecha_busqueda)]
-                    if not filtrados:
-                        st.error(f"No se encontraron registros para: {fecha_busqueda}")
-                    else:
-                        st.success(f"Se encontraron {len(filtrados)} turno(s):")
-                        for idx, t in enumerate(filtrados, 1):
-                            with st.expander(f"Turno #{idx} - Chofer: {t.get('chofer')} ({t.get('fecha')})"):
-                                st.write(f"**Horario:** {t.get('hora_inicio')} - {t.get('hora_fin')}")
-                                st.write(f"**Km Recorridos:** {t.get('km_recorridos', 0):,.1f} km")
-                                st.write(f"**Ingreso Bruto Total:** ₡ {t.get('total_ingresos', 0):,.2f}")
-                                st.write(f"**Ganancia Neta Final (Dueño):** ₡ {t.get('ganancia_neta', 0):,.2f}")
-                else:
-                    st.warning("Por favor ingrese una fecha.")
+            fecha_busqueda = st.text_input("Ingrese la fecha a consultar (Formato: DD-MM-YYYY o MM-YYYY)", placeholder="ej: 24-10-2026")
+            
+            if fecha_busqueda.strip():
+                filtrados = [t for t in turnos if t.get("fecha") == fecha_busqueda.strip() or t.get("fecha", "").endswith(fecha_busqueda.strip())]
+            else:
+                filtrados = turnos  # Muestra todos si está en blanco
+
+            if not filtrados:
+                st.error(f"No se encontraron registros para: {fecha_busqueda}")
+            else:
+                st.success(f"Se encontraron {len(filtrados)} turno(s):")
+                for idx, t in enumerate(filtrados, 1):
+                    with st.expander(f"Turno #{idx} - Chofer: {t.get('chofer')} ({t.get('fecha')})"):
+                        st.write(f"**Horario:** {t.get('hora_inicio')} - {t.get('hora_fin')}")
+                        st.write(f"**Km Recorridos:** {t.get('km_recorridos', 0):,.1f} km")
+                        st.write(f"**Ingreso Bruto Total:** ₡ {t.get('total_ingresos', 0):,.2f}")
+                        st.write(f"**Ganancia Neta Final (Dueño):** ₡ {t.get('ganancia_neta', 0):,.2f}")
 
     elif menu_opcion == "Historial de Repuestos / Mantenimiento":
         st.title("🛠️ Mantenimientos y Repuestos en la Nube")
