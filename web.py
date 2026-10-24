@@ -3,11 +3,24 @@ import json
 import urllib.request
 import urllib.error
 
+# CONFIGURACIÓN DE LA PÁGINA WEB
 st.set_page_config(
     page_title="Control Taxi - Panel Web",
     page_icon="🚖",
     layout="wide"
 )
+
+# ESTILOS PARA OCULTAR EL MENÚ DE GITHUB, EL FORK Y LA BARRA DE STREAMLIT
+hide_streamlit_style = """
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    .stApp > div:first-child {visibility: hidden;}
+    [data-testid="stStatusWidget"] {visibility: hidden;}
+    </style>
+"""
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 FIREBASE_API_KEY = "AIzaSyAOcup1zGoY9f_2CP4lBYdwBz_vWgacf5U"
 FIREBASE_DB_URL = "https://control-taxi-dany-default-rtdb.firebaseio.com/"
@@ -42,6 +55,7 @@ def cargar_datos_nube(uid):
     except Exception:
         pass
     return {"turnos": [], "mantenimientos": [], "turno_activo": None}
+
 def main():
     if "uid" not in st.session_state:
         st.session_state.uid = None
