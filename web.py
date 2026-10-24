@@ -10,14 +10,14 @@ st.set_page_config(
     layout="wide"
 )
 
-# ESTILOS PARA OCULTAR EL MENÚ DE GITHUB, EL FORK Y LA BARRA DE STREAMLIT
+# ESTILOS LIMPIOS PARA OCULTAR MENÚ Y BRANDING SIN AFECTAR LOS FORMULARIOS
 hide_streamlit_style = """
     <style>
     #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
     header {visibility: hidden;}
-    .stApp > div:first-child {visibility: hidden;}
-    [data-testid="stStatusWidget"] {visibility: hidden;}
+    footer {visibility: hidden;}
+    .stDeployButton {display:none;}
+    [data-testid="stToolbar"] {visibility: hidden; display: none;}
     </style>
 """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
