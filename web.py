@@ -61,6 +61,9 @@ def cargar_datos_nube(uid):
             if response.status == 200:
                 data = json.loads(response.read().decode('utf-8'))
                 if data:
+                    if "turno_activo" not in data: data["turno_activo"] = None
+                    if "turnos" not in data: data["turnos"] = []
+                    if "mantenimientos" not in data: data["mantenimientos"] = []
                     return data
     except Exception:
         pass
@@ -125,12 +128,15 @@ def main():
         st.title("📊 Estado Actual y Resumen en Vivo")
         st.markdown("---")
         
-        if turno_activo:
+        if turno_activo and isinstance(turno_activo, dict):
             st.warning("⚠️ ¡Hay un turno activo en este momento en la calle!")
             col1, col2, col3 = st.columns(3)
             col1.metric("Chofer", turno_activo.get("chofer", "N/A"))
             col2.metric("Hora de Inicio", turno_activo.get("hora_inicio", "N/A"))
             col3.metric("Km Inicial", f"{turno_activo.get('km_inicio', 0):,.1f} km")
+            
+            modo_str = "Cuota Fija" if turno_activo.get('es_cuota', False) else "Comisión 30%"
+            st.info(f"📋 **Modalidad de trabajo:** {modo_str}")
         else:
             st.info("ℹ️ No hay ningún turno abierto en este momento.")
 
@@ -344,8 +350,9 @@ GASTOS DEL TURNO:
             st.info("No hay repuestos registrados en la nube.")
         else:
             for idx, m in enumerate(mantenimientos, 1):
+                nombre_repuesto = m.get('item', m.get('pieza', 'Repuesto'))
                 st.markdown(f"""
-                **{idx}. {m.get('item', 'Repuesto').capitalize()}**  
+                **{idx}. {nombre_repuesto.capitalize()}**  
                 * Fecha: {m.get('fecha')}  
                 * Km Realizado: {m.get('km_realizado', 0):,.1f} km  
                 * **Costo:** ₡ {m.get('costo', 0):,.2f}  
