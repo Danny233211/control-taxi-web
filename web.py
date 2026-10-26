@@ -53,20 +53,32 @@ def iniciar_sesion_firebase(email, password):
         return None, "Correo o contraseña incorrectos."
     return None, "Error desconocido."
 
-def cargar_datos_nube(uid):
-    url = f"{FIREBASE_DB_URL}/usuarios/{uid}/datos_taxi.json"
-    try:
-        req = urllib.request.Request(url)
-        with urllib.request.urlopen(req) as response:
-            if response.status == 200:
-                data = json.loads(response.read().decode('utf-8'))
-                if data:
-                    if "turno_activo" not in data: data["turno_activo"] = None
-                    if "turnos" not in data: data["turnos"] = []
-                    if "mantenimientos" not in data: data["mantenimientos"] = []
-                    return data
-    except Exception as e:
-        print(f"Error cargando de nube: {e}")
+def cargar_datos_nube(uid, email=None):
+    # Rutas posibles para asegurar que encuentre los datos sin importar cómo se guardaron desde la app móvil
+    urls_a_probar = [
+        f"{FIREBASE_DB_URL}/usuarios/{uid}/datos_taxi.json"
+    ]
+    
+    if email:
+        email_clean = email.replace(".", "_").replace("@", "_")
+        urls_a_probar.append(f"{FIREBASE_DB_URL}/usuarios/{email_clean}/datos_taxi.json")
+        urls_a_probar.append(f"{FIREBASE_DB_URL}/datos_taxi.json")
+
+    for url in urls_a_probar:
+        try:
+            req = urllib.request.Request(url)
+            with urllib.request.urlopen(req) as response:
+                if response.status == 200:
+                    data = json.loads(response.read().decode('utf-8'))
+                    if data and isinstance(data, dict):
+                        if "turno_activo" not in data: data["turno_activo"] = None
+                        if "turnos" not in data: data["turnos"] = []
+                        if "mantenimientos" not in data: data["mantenimientos"] = []
+                        # Si encontramos datos con contenido real, los devolvemos de inmediato
+                        if data.get("turnos") or data.get("mantenimientos") or data.get("turno_activo"):
+                            return data
+        except Exception:
+            continue
     
     return {"turnos": [], "mantenimientos": [], "turno_activo": None}
 
@@ -93,7 +105,7 @@ def main():
                         uid, error = iniciar_sesion_firebase(email_input.strip(), password_input.strip())
                         if uid:
                             st.session_state.uid = uid
-                            st.session_state.email = email_input
+                            st.session_state.email = email_input.strip()
                             st.rerun()
                         else:
                             st.error(error)
@@ -111,7 +123,7 @@ def main():
             st.session_state.email = None
             st.rerun()
 
-    # Barra lateral de diagnóstico para verificar que el UID y Firebase coinciden perfectamente
+    # Barra lateral de diagnóstico
     with st.sidebar:
         st.markdown("### 🔍 Diagnóstico de Conexión")
         st.text(f"UID: {st.session_state.uid}")
@@ -136,7 +148,8 @@ def main():
     
     st.markdown("---")
 
-    datos = cargar_datos_nube(st.session_state.uid)
+    # Cargamos los datos pasando el UID y el correo para blindar la lectura
+    datos = cargar_datos_nube(st.session_state.uid, st.session_state.email)
     turnos = datos.get("turnos", [])
     mantenimientos = datos.get("mantenimientos", [])
     turno_activo = datos.get("turno_activo", None)
@@ -159,7 +172,6 @@ def main():
 
         st.markdown("### 📈 Estadísticas del Historial")
         
-        # Selector de filtro temporal
         filtro_tiempo = st.radio(
             "Filtrar estadísticas por período:",
             ["Todo el Historial", "Esta Semana (Lunes a Domingo)", "Este Mes", "Este Año"],
