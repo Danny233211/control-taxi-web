@@ -65,8 +65,9 @@ def cargar_datos_nube(uid):
                     if "turnos" not in data: data["turnos"] = []
                     if "mantenimientos" not in data: data["mantenimientos"] = []
                     return data
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Error cargando de nube: {e}")
+    
     return {"turnos": [], "mantenimientos": [], "turno_activo": None}
 
 def main():
@@ -109,6 +110,22 @@ def main():
             st.session_state.uid = None
             st.session_state.email = None
             st.rerun()
+
+    # Barra lateral de diagnóstico para verificar que el UID y Firebase coinciden perfectamente
+    with st.sidebar:
+        st.markdown("### 🔍 Diagnóstico de Conexión")
+        st.text(f"UID: {st.session_state.uid}")
+        if st.button("Probar Conexión Firebase"):
+            url_test = f"{FIREBASE_DB_URL}/usuarios/{st.session_state.uid}/datos_taxi.json"
+            try:
+                req = urllib.request.Request(url_test)
+                with urllib.request.urlopen(req) as resp:
+                    if resp.status == 200:
+                        raw_data = resp.read().decode('utf-8')
+                        st.success("¡Conexión exitosa con Firebase!")
+                        st.json(json.loads(raw_data) if raw_data != "null" else {"estado": "Nodo vacío"})
+            except Exception as ex:
+                st.error(f"Error al conectar: {ex}")
 
     st.markdown("---")
 
